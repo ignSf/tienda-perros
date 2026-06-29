@@ -1,0 +1,25 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: tienda-cluster
+  region: us-east-1 # Puedes cambiar esto según la región que uses (ej: us-east-1)
+
+# Aquí es donde le indicas explícitamente a EKS que utilice 2 Zonas de Disponibilidad
+availabilityZones: ["us-east-1a", "us-east-1b"]
+
+# Configuración de los nodos (donde se ejecutarán los Pods)
+managedNodeGroups:
+  - name: node-group-tienda
+    instanceType: t3.medium
+    minSize: 2 # Un nodo en us-east-1a y un nodo en us-east-1b
+    maxSize: 4 # Permite que el Auto Scaling agregue más nodos si hay carga
+    desiredCapacity: 2
+    
+    # Otorgar permisos necesarios a los nodos para que puedan descargar de ECR y manejar logs
+    iam:
+      withAddonPolicies:
+        autoScaler: true # Permiso para el Auto Scaling (HPA)
+        cloudWatch: true # Permiso para los logs
+        albIngress: true # Permiso para el Balanceador de Carga
+        ecrFixed: true   # Permiso para descargar las imágenes del frontend/backend
